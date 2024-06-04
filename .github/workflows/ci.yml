@@ -1,0 +1,27 @@
+#워크플로 이름 지정
+name : CI
+
+#워크플로 시작 조건 지정
+#main 브랜치에 push 할 때마다 워크플로 시작
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 실행 환경 지정
+    # 실행 스텝 지정
+    # uses : 해당 키워드는 지정한 리포지토리를 확인하고 코드에 대한 작업을 실행
+    # run : 해당 키워드는 실행할 명령어를 입력
+    steps:
+      - uses: actions/checkout@v3 #checkout이라는 작업의 v3 버전을 실행
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      #스텝의 이름을 지정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name : Build with Gradle
+        run: ./gradlew clean build # 그레들을 사용해 프로젝트를 빌드 이전상태로 돌리고 다시 빌드하는 명령어를 수행
