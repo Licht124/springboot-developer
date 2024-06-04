@@ -1,0 +1,58 @@
+#워크플로 이름 지정
+name : CI/CD
+
+#워크플로 시작 조건 지정
+#main 브랜치에 push 할 때마다 워크플로 시작
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 실행 환경 지정
+    # 실행 스텝 지정
+    # uses : 해당 키워드는 지정한 리포지토리를 확인하고 코드에 대한 작업을 실행
+    # run : 해당 키워드는 실행할 명령어를 입력
+    steps:
+      - uses: actions/checkout@v3 #checkout이라는 작업의 v3 버전을 실행
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+
+      #스텝의 이름을 지정
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name : Build with Gradle
+        run: ./gradlew clean build # 그레들을 사용해 프로젝트를 빌드 이전상태로 돌리고 다시 빌드하는 명령어를 수행
+
+      # 현재 시간 가져오기
+      # 배포 버전 지정할 때 사용
+      - name : Get current time
+        uses : josStorer/get-current-time@v2.0.2
+        id : current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00"
+
+      # 배포용 패키지 경로 저장
+      # 빌드 이후 생성된 jar 파일을 찾아 artifact 라는 환경 변수에 값을 대입
+      # GITHUB_ENV를 사용해 깃허브 워크플로 전체적으로 사용할 수 있는 환경 변수 설정 가능
+      - name : Set artifact
+        run : echo "artifact=$(ls ./build/libs)" >> $GITHUB_ENV
+
+      # 빈스토크 배포
+      # 액세스키/비밀키는 깃허브 액션에서 가져온다. 이값은 aws에서 만들고 깃허브에서 설정
+      # 환경이름 / 애플리케이션 이름은 일래스틱 빈스토크에서 확인
+      - name : Beanstalk Deploy
+        uses : einaregilsson/beanstalk-deploy@v20
+        with :
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: springboot-developer
+          environment_name : spring-developer-env
+          version_label: github-action-${{steps.current-time.outputs.formattedTime}}
+          region: ap-northeast-2
+          deployment_package: ./build/libs/${{env.artifact}}

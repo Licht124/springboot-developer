@@ -22,8 +22,8 @@ spring:
       client:
         registration:
           google:
-            client-id: 1064141715200-90pvepr2i9gbcdnuqeohsu5qhuhuipmv.apps.googleusercontent.com
-            client-secret: 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
+            client-id: test_id
+            client-secret: test_secret
             scope:
               - email
               - profile
@@ -33,4 +33,4 @@ spring:
   # 띄어쓰기 중요, 아래 :뒤 안하면 에러 발생
 jwt:
   issuer: sunuk.kim0320@gmail.com
-  secret_key: study-springboot
+  secret_key: testKey
