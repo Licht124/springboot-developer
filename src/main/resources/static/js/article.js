@@ -70,7 +70,6 @@ const createButton = document.getElementById('create-btn');
 //  });
 //}
 
-
 if(createButton) {
     createButton.addEventListener("click", (event) => {
     body = JSON.stringify({
@@ -91,6 +90,32 @@ if(createButton) {
     httpRequest("POST", "/api/articles", body, success, fail);
     });
 }
+
+
+    const commentCreateButton = document.getElementById('comment-create-btn');
+
+    if(commentCreateButton) {
+        commentCreateButton.addEventListener('click',event => {
+            articleId = document.getElementById('article-id').value;
+
+            body = JSON.stringify({
+                articleId : articleId,
+                content: document.getElementById('content').value
+            });
+
+                function success() {
+                    alert("등록 완료");
+                    location.replace("/articles/" + articleId);
+                }
+
+                function fail() {
+                    alert("등록 실패");
+                    location.replace("/articles/" + articleId);
+                }
+
+            httpRequest('POST', '/api/comments', body, success, fail)
+        })
+    }
 
 function getCookie(key) {
     var result = null;
@@ -150,6 +175,6 @@ function httpRequest(method, url , body, success , fail) {
         } else {
             return fail();
         }
-
     })
+
 }

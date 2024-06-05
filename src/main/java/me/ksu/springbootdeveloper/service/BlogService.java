@@ -2,13 +2,23 @@ package me.ksu.springbootdeveloper.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import me.ksu.springbootdeveloper.config.error.exception.ArticleNotFoundException;
 import me.ksu.springbootdeveloper.domain.Article;
+import me.ksu.springbootdeveloper.domain.Comment;
 import me.ksu.springbootdeveloper.dto.AddArticleRequest;
+import me.ksu.springbootdeveloper.dto.AddCommentRequest;
+import me.ksu.springbootdeveloper.dto.AddCommentResponse;
 import me.ksu.springbootdeveloper.dto.UpdateArticleRequest;
 import me.ksu.springbootdeveloper.repository.BlogRepository;
+import me.ksu.springbootdeveloper.repository.CommentRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequiredArgsConstructor // final or @NotNull 필드 생성자 추가
@@ -16,6 +26,7 @@ import java.util.List;
 public class BlogService {
 
     private final BlogRepository blogRepository;
+    private final CommentRepository commentRepository;
 
     // 글 추가 메소드
     public Article save(AddArticleRequest request,String userName) {
@@ -29,7 +40,7 @@ public class BlogService {
 
     public Article findById(long id) {
         return blogRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("not found: " + id));
+                .orElseThrow(ArticleNotFoundException::new);
                 // 엔티티 없으면 예외 발생
     }
 
@@ -59,5 +70,12 @@ public class BlogService {
             throw new IllegalArgumentException("not authorized");
         }
     }
+
+    public Comment addComment(AddCommentRequest request, String userName) {
+        Article article = blogRepository.findById(request.getArticleId())
+                .orElseThrow(() -> new IllegalArgumentException("not found : " + request.getArticleId()));
+        return commentRepository.save(request.toEntity(userName,article));
+    }
+
 
 }

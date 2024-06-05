@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -37,7 +38,6 @@ public class Article {
     @Column(name = "author", nullable = false)
     private String author;
 
-
     @Builder // 빌더 패턴으로 객체 생성
     public Article(String author,String title, String content) {
         this.author = author;
@@ -49,6 +49,12 @@ public class Article {
         this.title = title;
         this.content = content;
     }
+
+    // mappepdBy : 자식 엔티티가 부모 엔티티를 참조할 때 사용
+    // 자식 엔티티가 article 필드를 사용해 부모 엔티티와 관계를 나타냄을 의미
+    // cascade : 부모 엔티티 삭제되는 경우 자식 엔티티의 전파방법 설정
+    @OneToMany(mappedBy ="article" , cascade = CascadeType.REMOVE)
+    private List<Comment> comments;
 
 
 
